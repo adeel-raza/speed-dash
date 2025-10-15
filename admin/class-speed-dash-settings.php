@@ -38,7 +38,7 @@ class Speed_Dash_Settings {
 	 * Add admin menu.
 	 */
 	public function add_admin_menu() {
-		add_options_page(
+		add_dashboard_page(
 			__( 'Speed Dash Settings', 'speeddash' ),
 			__( 'Speed Dash', 'speeddash' ),
 			'manage_options',
@@ -297,7 +297,7 @@ class Speed_Dash_Settings {
 							</a>
 						</p>
 						<p>
-							<a href="<?php echo esc_url( add_query_arg( 'restore', 'true', admin_url( 'options-general.php?page=speed-dash' ) ) ); ?>" 
+							<a href="<?php echo esc_url( add_query_arg( 'restore', 'true', admin_url( 'index.php?page=speed-dash' ) ) ); ?>" 
 							   class="button button-secondary" 
 							   onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to restore default settings?', 'speeddash' ); ?>');">
 								<?php esc_html_e( 'Restore Defaults', 'speeddash' ); ?>
@@ -542,7 +542,7 @@ class Speed_Dash_Settings {
 		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%' OR option_name LIKE '_site_transient_%'" );
 
 		// Redirect with success message.
-		wp_redirect( add_query_arg( 'cache-cleared', 'true', admin_url( 'options-general.php?page=speed-dash' ) ) );
+		wp_redirect( add_query_arg( 'cache-cleared', 'true', admin_url( 'index.php?page=speed-dash' ) ) );
 		exit;
 	}
 
@@ -569,7 +569,7 @@ class Speed_Dash_Settings {
 		}
 
 		// Redirect with success message.
-		wp_redirect( add_query_arg( 'detection-refreshed', 'true', admin_url( 'options-general.php?page=speed-dash' ) ) );
+		wp_redirect( add_query_arg( 'detection-refreshed', 'true', admin_url( 'index.php?page=speed-dash' ) ) );
 		exit;
 	}
 

@@ -190,6 +190,9 @@ class Speed_Dash {
 	 * Initialize all optimizers.
 	 */
 	private function init_optimizers() {
+		// Initialize settings page.
+		new Speed_Dash_Settings( $this->get_plugin_name(), $this->get_version() );
+		
 		// Initialize emoji disabler.
 		new Speed_Dash_Emoji_Disabler();
 		
