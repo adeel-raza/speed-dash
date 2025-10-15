@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Speed Dash
+ * Plugin Name: SpeedDash
  * Plugin URI: https://github.com/adeel-raza/speed-dash
  * Description: Diagnose and fix WordPress admin backend slowness with one-click safe optimizations. Backend-only, non-invasive.
  * Version: 1.0.0
@@ -28,244 +28,209 @@ define( 'SPEED_DASH_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SPEED_DASH_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * Speed Dash main class.
+ * The code that runs during plugin activation.
  */
-class Speed_Dash {
-
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-		// Only initialize in admin area.
-		if ( is_admin() ) {
-			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-			add_action( 'admin_init', array( $this, 'register_settings' ) );
-			add_action( 'admin_init', array( $this, 'init_optimizations' ) );
-		}
+function speeddash_activate() {
+	// Set default settings on activation.
+	$default_settings = array(
+		'speeddash_dashboard_widgets' => true,
+		'speeddash_aggressive_dashboard' => false,
+		'speeddash_hide_notices' => true,
+		'speeddash_heartbeat_frequency' => true,
+		'speeddash_dequeue_scripts' => true,
+		'speeddash_disable_emoji' => true,
+		'speeddash_cache_notice' => true,
+		'speeddash_smartcache_enabled' => true,
+		'speeddash_prefetch_enabled' => true,
+		'speeddash_universal_optimization' => true,
+		'speeddash_smart_detection' => true,
+		'speeddash_aggressive_optimization' => true,
+		'speeddash_database_optimization' => true,
+		'speeddash_performance_monitoring' => false,
+	);
+	
+	// Only set defaults if no settings exist.
+	if ( ! get_option( 'speeddash_settings' ) ) {
+		update_option( 'speeddash_settings', $default_settings );
 	}
-
-	/**
-	 * Add admin menu.
-	 */
-	public function add_admin_menu() {
-		add_options_page(
-			__( 'Speed Dash Settings', 'speeddash' ),
-			__( 'Speed Dash', 'speeddash' ),
-			'manage_options',
-			'speed-dash',
-			array( $this, 'admin_page' )
-		);
-	}
-
-	/**
-	 * Register settings.
-	 */
-	public function register_settings() {
-		register_setting( 'speeddash_settings', 'speeddash_settings' );
-	}
-
-	/**
-	 * Initialize optimizations.
-	 */
-	public function init_optimizations() {
-		$settings = get_option( 'speeddash_settings', $this->get_default_settings() );
-
-		// Dashboard widgets.
-		if ( $settings['dashboard_widgets'] ) {
-			add_action( 'wp_dashboard_setup', array( $this, 'remove_dashboard_widgets' ) );
-		}
-
-		// Hide admin notices.
-		if ( $settings['hide_notices'] ) {
-			add_action( 'admin_head', array( $this, 'hide_admin_notices' ) );
-		}
-
-		// Heartbeat frequency.
-		if ( $settings['heartbeat_frequency'] ) {
-			add_action( 'init', array( $this, 'optimize_heartbeat' ) );
-		}
-
-		// Script optimization.
-		if ( $settings['dequeue_scripts'] ) {
-			add_action( 'admin_enqueue_scripts', array( $this, 'dequeue_scripts' ) );
-		}
-
-		// Disable emoji.
-		if ( $settings['disable_emoji'] ) {
-			add_action( 'init', array( $this, 'disable_emoji' ) );
-		}
-	}
-
-	/**
-	 * Get default settings.
-	 */
-	private function get_default_settings() {
-		return array(
-			'dashboard_widgets' => true,
-			'hide_notices' => true,
-			'heartbeat_frequency' => true,
-			'dequeue_scripts' => true,
-			'disable_emoji' => true,
-		);
-	}
-
-	/**
-	 * Remove dashboard widgets.
-	 */
-	public function remove_dashboard_widgets() {
-		remove_meta_box( 'dashboard_quick_press', 'dashboard', 'side' );
-		remove_meta_box( 'dashboard_recent_drafts', 'dashboard', 'side' );
-		remove_meta_box( 'dashboard_primary', 'dashboard', 'side' );
-		remove_meta_box( 'dashboard_secondary', 'dashboard', 'side' );
-		remove_meta_box( 'dashboard_incoming_links', 'dashboard', 'normal' );
-		remove_meta_box( 'dashboard_plugins', 'dashboard', 'normal' );
-		remove_meta_box( 'dashboard_right_now', 'dashboard', 'normal' );
-		remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'normal' );
-		remove_meta_box( 'dashboard_activity', 'dashboard', 'normal' );
-	}
-
-	/**
-	 * Hide admin notices.
-	 */
-	public function hide_admin_notices() {
-		echo '<style>.notice, .error, .updated { display: none !important; }</style>';
-	}
-
-	/**
-	 * Optimize heartbeat frequency.
-	 */
-	public function optimize_heartbeat() {
-		wp_deregister_script( 'heartbeat' );
-		wp_register_script( 'heartbeat', admin_url( 'js/heartbeat.min.js' ), array( 'jquery' ), '1.6.3', true );
-		wp_localize_script( 'heartbeat', 'heartbeatSettings', array(
-			'interval' => 60, // 60 seconds instead of 15
-		) );
-	}
-
-	/**
-	 * Dequeue unnecessary scripts.
-	 */
-	public function dequeue_scripts() {
-		wp_dequeue_script( 'jquery-ui-core' );
-		wp_dequeue_script( 'jquery-ui-widget' );
-		wp_dequeue_script( 'jquery-ui-mouse' );
-		wp_dequeue_script( 'jquery-ui-sortable' );
-		wp_dequeue_script( 'jquery-ui-draggable' );
-		wp_dequeue_script( 'jquery-ui-droppable' );
-		wp_dequeue_script( 'jquery-ui-selectable' );
-		wp_dequeue_script( 'jquery-ui-position' );
-		wp_dequeue_script( 'jquery-ui-menu' );
-		wp_dequeue_script( 'jquery-ui-autocomplete' );
-		wp_dequeue_script( 'jquery-ui-tooltip' );
-		wp_dequeue_script( 'jquery-ui-tabs' );
-		wp_dequeue_script( 'jquery-ui-slider' );
-		wp_dequeue_script( 'jquery-ui-progressbar' );
-		wp_dequeue_script( 'jquery-ui-dialog' );
-		wp_dequeue_script( 'jquery-ui-button' );
-		wp_dequeue_script( 'jquery-ui-datepicker' );
-		wp_dequeue_script( 'jquery-ui-accordion' );
-		wp_dequeue_script( 'jquery-ui-resizable' );
-		wp_dequeue_script( 'jquery-ui-selectmenu' );
-		wp_dequeue_script( 'jquery-ui-spinner' );
-		wp_dequeue_script( 'jquery-ui-tooltip' );
-	}
-
-	/**
-	 * Disable emoji.
-	 */
-	public function disable_emoji() {
-		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
-		remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
-		remove_action( 'wp_print_styles', 'print_emoji_styles' );
-		remove_action( 'admin_print_styles', 'print_emoji_styles' );
-		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
-		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
-		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
-	}
-
-	/**
-	 * Admin page.
-	 */
-	public function admin_page() {
-		$settings = get_option( 'speeddash_settings', $this->get_default_settings() );
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Speed Dash Settings', 'speeddash' ); ?></h1>
-			
-			<?php if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] === 'true' ) : ?>
-				<div class="notice notice-success is-dismissible">
-					<p><?php esc_html_e( 'Settings saved successfully!', 'speeddash' ); ?></p>
-				</div>
-			<?php endif; ?>
-
-			<form method="post" action="options.php">
-				<?php settings_fields( 'speeddash_settings' ); ?>
-				
-				<table class="form-table">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Dashboard Widgets', 'speeddash' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="speeddash_settings[dashboard_widgets]" value="1" <?php checked( $settings['dashboard_widgets'] ); ?>>
-								<?php esc_html_e( 'Remove unnecessary dashboard widgets', 'speeddash' ); ?>
-							</label>
-						</td>
-					</tr>
-					
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Admin Notices', 'speeddash' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="speeddash_settings[hide_notices]" value="1" <?php checked( $settings['hide_notices'] ); ?>>
-								<?php esc_html_e( 'Hide admin notices and warnings', 'speeddash' ); ?>
-							</label>
-						</td>
-					</tr>
-					
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Heartbeat Frequency', 'speeddash' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="speeddash_settings[heartbeat_frequency]" value="1" <?php checked( $settings['heartbeat_frequency'] ); ?>>
-								<?php esc_html_e( 'Reduce heartbeat frequency from 15s to 60s', 'speeddash' ); ?>
-							</label>
-						</td>
-					</tr>
-					
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Script Optimization', 'speeddash' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="speeddash_settings[dequeue_scripts]" value="1" <?php checked( $settings['dequeue_scripts'] ); ?>>
-								<?php esc_html_e( 'Remove unnecessary jQuery UI scripts', 'speeddash' ); ?>
-							</label>
-						</td>
-					</tr>
-					
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Emoji', 'speeddash' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="speeddash_settings[disable_emoji]" value="1" <?php checked( $settings['disable_emoji'] ); ?>>
-								<?php esc_html_e( 'Disable WordPress emoji scripts and styles', 'speeddash' ); ?>
-							</label>
-						</td>
-					</tr>
-				</table>
-				
-				<?php submit_button(); ?>
-			</form>
-		</div>
-		<?php
-	}
+	
+	// Flush rewrite rules.
+	flush_rewrite_rules();
 }
 
-// Initialize the plugin safely.
+/**
+ * The code that runs during plugin deactivation.
+ */
+function speeddash_deactivate() {
+	// Flush rewrite rules.
+	flush_rewrite_rules();
+	
+	// Clear any scheduled events.
+	wp_clear_scheduled_hook( 'speeddash_prefetch_worker' );
+}
+
+// Register activation and deactivation hooks.
+register_activation_hook( __FILE__, 'speeddash_activate' );
+register_deactivation_hook( __FILE__, 'speeddash_deactivate' );
+
+/**
+ * Load the plugin files.
+ */
+function speeddash_load_plugin_files() {
+	// Load all the includes.
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-loader.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-i18n.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-admin.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-public.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-emoji-disabler.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-heartbeat-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-script-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-dashboard-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-universal-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-smart-detector.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-aggressive-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-database-optimizer.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-runtime-cache.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-file-cache.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-hybrid-cache.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-prefetch-worker.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-cache-detector.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-smartcache.php';
+	require_once SPEED_DASH_PATH . 'includes/class-speed-dash-performance-monitor.php';
+	require_once SPEED_DASH_PATH . 'admin/class-speed-dash-settings.php';
+}
+
+/**
+ * Initialize the plugin.
+ */
 function speeddash_init() {
-	if ( is_admin() ) {
-		new Speed_Dash();
-	}
+	// Load plugin files.
+	speeddash_load_plugin_files();
+	
+	// Initialize the main plugin class.
+	$speed_dash = new Speed_Dash();
+	$speed_dash->run();
 }
 
 // Hook into WordPress.
 add_action( 'plugins_loaded', 'speeddash_init' );
+
+/**
+ * Main Speed Dash class.
+ */
+class Speed_Dash {
+
+	/**
+	 * The loader that's responsible for maintaining and registering all hooks.
+	 */
+	protected $loader;
+
+	/**
+	 * The unique identifier of this plugin.
+	 */
+	protected $plugin_name;
+
+	/**
+	 * The current version of the plugin.
+	 */
+	protected $version;
+
+	/**
+	 * Define the core functionality of the plugin.
+	 */
+	public function __construct() {
+		if ( defined( 'SPEED_DASH_VERSION' ) ) {
+			$this->version = SPEED_DASH_VERSION;
+		} else {
+			$this->version = '1.0.0';
+		}
+		$this->plugin_name = 'speeddash';
+
+		$this->load_dependencies();
+		$this->set_locale();
+		$this->define_admin_hooks();
+		$this->define_public_hooks();
+		$this->init_optimizers();
+	}
+
+	/**
+	 * Load the required dependencies for this plugin.
+	 */
+	private function load_dependencies() {
+		$this->loader = new Speed_Dash_Loader();
+	}
+
+	/**
+	 * Define the locale for this plugin for internationalization.
+	 */
+	private function set_locale() {
+		$plugin_i18n = new Speed_Dash_i18n();
+		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
+	}
+
+	/**
+	 * Register all of the hooks related to the admin area functionality.
+	 */
+	private function define_admin_hooks() {
+		$plugin_admin = new Speed_Dash_Admin( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+	}
+
+	/**
+	 * Register all of the hooks related to the public-facing functionality.
+	 */
+	private function define_public_hooks() {
+		$plugin_public = new Speed_Dash_Public( $this->get_plugin_name(), $this->get_version() );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+	}
+
+	/**
+	 * Initialize all optimizers.
+	 */
+	private function init_optimizers() {
+		// Initialize emoji disabler.
+		new Speed_Dash_Emoji_Disabler();
+		
+		// Initialize cache detector first.
+		new Speed_Dash_Cache_Detector();
+		
+		// Initialize other optimizers.
+		new Speed_Dash_Universal_Optimizer();
+		new Speed_Dash_Smart_Detector();
+		new Speed_Dash_Aggressive_Optimizer();
+		new Speed_Dash_Database_Optimizer();
+		new Speed_Dash_SmartCache();
+		new Speed_Dash_Performance_Monitor();
+	}
+
+	/**
+	 * Run the loader to execute all of the hooks with WordPress.
+	 */
+	public function run() {
+		$this->loader->run();
+	}
+
+	/**
+	 * The name of the plugin used to uniquely identify it within the context of
+	 * WordPress and to define internationalization functionality.
+	 */
+	public function get_plugin_name() {
+		return $this->plugin_name;
+	}
+
+	/**
+	 * The reference to the class that orchestrates the hooks with the plugin.
+	 */
+	public function get_loader() {
+		return $this->loader;
+	}
+
+	/**
+	 * Retrieve the version number of the plugin.
+	 */
+	public function get_version() {
+		return $this->version;
+	}
+}
